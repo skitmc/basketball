@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basketball Playbook Pro | Buzz City</title>
+    <title>Buzz City Playbook Pro | Object Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <style>
         :root {
             --teal: #00788C;
@@ -17,7 +18,7 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--dark);
             color: var(--text);
             margin: 0;
@@ -44,18 +45,17 @@
         }
 
         .sidebar-header {
-            padding: 25px;
+            padding: 20px;
             text-align: center;
             background: linear-gradient(to bottom, var(--purple), transparent);
         }
 
         h1 {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             color: var(--teal);
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             margin: 0;
-            text-shadow: 0 0 10px rgba(0, 120, 140, 0.5);
         }
 
         .scroll-area {
@@ -64,7 +64,6 @@
             padding: 15px;
         }
 
-        /* --- ACCORDIONS --- */
         details {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -74,27 +73,20 @@
         }
 
         summary {
-            padding: 14px;
+            padding: 12px;
             font-weight: 700;
             cursor: pointer;
             color: var(--teal);
             list-style: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.2s;
         }
 
-        summary:hover { background: rgba(0, 120, 140, 0.1); }
-        details[open] summary { background: var(--purple); color: white; }
+        .content { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
 
-        .content { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-
-        /* --- TOOLS & UI --- */
-        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        /* --- TOOLS --- */
+        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
         button {
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid var(--border);
             background: #30363d;
@@ -102,17 +94,15 @@
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
-            font-size: 13px;
         }
 
-        button:hover { border-color: var(--teal); background: #3c444d; }
-        button.active { background: var(--teal); color: white; border-color: white; box-shadow: 0 0 15px rgba(0, 120, 140, 0.4); }
+        button:hover { border-color: var(--teal); }
+        button.active { background: var(--teal); border-color: white; }
+        
+        .delete-btn { background: #da3633; border: none; margin-top: 10px; }
+        .delete-btn:hover { background: #ff4d4d; }
 
-        .swatch-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .swatch { width: 28px; height: 28px; border-radius: 6px; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
-        .swatch:hover { transform: scale(1.1); border-color: white; }
-
-        /* --- CANVAS --- */
+        /* --- MAIN AREA --- */
         main {
             flex: 1;
             display: flex;
@@ -120,73 +110,46 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            background-image: 
-                radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
-            background-size: 40px 40px;
         }
 
-        .canvas-card {
+        .canvas-container-outer {
             background: white;
-            padding: 8px;
-            border-radius: 16px;
+            padding: 5px;
+            border-radius: 12px;
             border: 4px solid var(--teal);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
         }
 
-        canvas { border-radius: 8px; cursor: crosshair; display: block; }
-
-        /* --- TOP HUD --- */
-        .hud {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 15px;
-            z-index: 10;
-        }
-
-        .hud-btn {
-            background: rgba(22, 27, 34, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border);
-            padding: 10px 20px;
-            border-radius: 30px;
-            color: white;
-            font-weight: bold;
-        }
-
-        .hud-btn:hover { background: var(--teal); border-color: white; }
-
-        /* --- CONTROLS --- */
         #sidebarToggle {
             position: fixed;
             left: 20px;
             bottom: 20px;
             z-index: 1000;
             background: var(--teal);
-            width: 50px;
-            height: 50px;
-            border-radius: 25px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
             border: none;
             color: white;
-            font-size: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            cursor: pointer;
         }
 
-        input[type="text"] {
-            padding: 12px;
-            background: #0d1117;
+        .hud {
+            position: absolute;
+            top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .hud-btn {
+            background: rgba(22, 27, 34, 0.9);
             border: 1px solid var(--border);
+            padding: 8px 15px;
+            border-radius: 20px;
             color: white;
-            border-radius: 8px;
-            outline: none;
+            font-size: 12px;
+            cursor: pointer;
         }
-
-        input[type="text"]:focus { border-color: var(--teal); }
-
-        .hidden-input { display: none; }
     </style>
 </head>
 <body>
@@ -194,277 +157,192 @@
     <button id="sidebarToggle">☰</button>
 
     <div class="hud">
-        <button onclick="undo()" class="hud-btn">↩ UNDO</button>
-        <button onclick="clearCanvas()" class="hud-btn" style="color: #ff4d4d;">🗑 CLEAR</button>
-        <button onclick="document.getElementById('fileUpload').click()" class="hud-btn" style="color: var(--teal);">📤 UPLOAD PLAY</button>
+        <button onclick="deleteSelected()" class="hud-btn" style="color:#ff4d4d">DELETE SELECTED</button>
+        <button onclick="clearCanvas()" class="hud-btn">CLEAR ALL</button>
+        <button onclick="document.getElementById('fileUpload').click()" class="hud-btn" style="color:var(--teal)">UPLOAD BASE</button>
     </div>
 
-    <input type="file" id="fileUpload" class="hidden-input" accept="image/*">
+    <input type="file" id="fileUpload" style="display:none" accept="image/*">
 
     <aside id="sidebar">
-        <div class="sidebar-header">
-            <h1>BUZZ CITY PRO</h1>
-        </div>
-
+        <div class="sidebar-header"><h1>BUZZ CITY ELITE</h1></div>
         <div class="scroll-area">
+            
             <details open>
-                <summary>🎨 PALETTE & HISTORY</summary>
+                <summary>🎨 STYLE & COLOR</summary>
                 <div class="content">
-                    <input type="color" id="colorPicker" value="#00788C" style="width:100%; height:50px; border-radius:8px; border:none; background:none; cursor:pointer;">
-                    <div id="colorHistory" class="swatch-grid"></div>
+                    <input type="color" id="colorPicker" value="#00788C" style="width:100%; height:40px; cursor:pointer; border-radius:5px; border:none; background:none;">
                 </div>
             </details>
 
             <details open>
-                <summary>🖌️ PRIMARY TOOLS</summary>
+                <summary>🕹️ INTERACTION</summary>
                 <div class="content">
-                    <div class="tool-grid">
-                        <button class="tool active" data-tool="pen">PEN</button>
-                        <button class="tool" data-tool="dot">PLAYER DOT</button>
-                    </div>
-                    <input type="text" id="textInput" placeholder="Label (e.g. 'SCREEN')">
-                    <button class="tool" data-tool="text">PLACE TEXT</button>
+                    <button class="tool active" data-tool="select">SELECT / MOVE</button>
+                    <p style="font-size: 11px; color: #8b949e;">Click an object on the court to move, resize, or change its color.</p>
                 </div>
             </details>
 
-            <details>
-                <summary>📐 TACTICAL SHAPES</summary>
+            <details open>
+                <summary>📐 ADD OBJECTS</summary>
                 <div class="content">
                     <div class="tool-grid">
-                        <button class="tool" data-tool="circle">CIRCLE</button>
-                        <button class="tool" data-tool="square">SQUARE</button>
-                        <button class="tool" data-tool="star">STAR</button>
-                        <button class="tool" data-tool="heart">HEART</button>
-                        <button class="tool" data-tool="x-mark">X MARK</button>
+                        <button class="tool" data-tool="dot">PLAYER</button>
+                        <button class="tool" data-tool="circle">ZONE</button>
+                        <button class="tool" data-tool="square">BOX</button>
                         <button class="tool" data-tool="arrow">ARROW</button>
+                        <button class="tool" data-tool="x-mark">X MARK</button>
+                        <button class="tool" data-tool="star">STAR</button>
                     </div>
+                    <hr style="border:0; border-top:1px solid var(--border); margin:5px 0;">
+                    <input type="text" id="textInput" placeholder="Note (e.g. 'SCREEN')">
+                    <button class="tool" data-tool="text">ADD TEXT</button>
                 </div>
             </details>
 
-            <div style="margin-top: 20px;">
-                <input type="text" id="filenameInput" placeholder="Filename..." style="width:100%; margin-bottom:10px;">
-                <button onclick="saveImage()" style="width:100%; background: var(--teal); padding:15px; font-size:16px;">💾 DOWNLOAD PNG</button>
+            <div style="margin-top:20px;">
+                <button onclick="exportPNG()" style="width:100%; background:var(--teal); padding:15px;">💾 DOWNLOAD PNG</button>
             </div>
         </div>
     </aside>
 
     <main>
-        <div class="canvas-card">
-            <canvas id="playCanvas" width="900" height="600"></canvas>
+        <div class="canvas-container-outer">
+            <canvas id="mainCanvas" width="900" height="600"></canvas>
         </div>
     </main>
 
     <script>
-        const canvas = document.getElementById('playCanvas');
-        const ctx = canvas.getContext('2d');
+        // Initialize Fabric Canvas
+        const canvas = new fabric.Canvas('mainCanvas', {
+            preserveObjectStacking: true
+        });
+
         const colorPicker = document.getElementById('colorPicker');
-        const historyContainer = document.getElementById('colorHistory');
-        const fileUpload = document.getElementById('fileUpload');
-        
-        let isDrawing = false;
-        let currentTool = 'pen';
-        let startX, startY;
-        let history = [];
-        let usedColors = new Set();
-        let snapshot; // Used for live preview of shapes
+        const textInput = document.getElementById('textInput');
+        let currentTool = 'select';
 
-        const bg = new Image();
-        bg.src = 'assets/background.png';
-        bg.onload = () => { resetAndSave(); };
-
-        function resetAndSave() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
-            saveState();
+        // 1. Set Background Court
+        function setBackground(url) {
+            fabric.Image.fromURL(url, function(img) {
+                canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+                    scaleX: canvas.width / img.width,
+                    scaleY: canvas.height / img.height
+                });
+            });
         }
+        setBackground('assets/background.png');
 
-        // --- CORE FUNCTIONS ---
-        function saveState() {
-            if (history.length > 25) history.shift();
-            history.push(canvas.toDataURL());
-            addColorHistory(colorPicker.value);
-        }
-
-        function undo() {
-            if (history.length > 1) {
-                history.pop();
-                const img = new Image();
-                img.src = history[history.length - 1];
-                img.onload = () => {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0);
-                };
-            }
-        }
-
-        function clearCanvas() {
-            if(confirm("Wipe the court?")) resetAndSave();
-        }
-
-        // --- UPLOAD LOGIC ---
-        fileUpload.onchange = (e) => {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    saveState();
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        };
-
-        // --- UI LOGIC ---
-        document.getElementById('sidebarToggle').onclick = () => {
-            document.body.classList.toggle('sidebar-closed');
-        };
-
+        // 2. Tool Logic
         document.querySelectorAll('.tool').forEach(btn => {
             btn.onclick = () => {
                 document.querySelectorAll('.tool').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentTool = btn.dataset.tool;
+                
+                // Disable/Enable selection based on tool
+                canvas.selection = (currentTool === 'select');
+                canvas.forEachObject(obj => obj.selectable = (currentTool === 'select'));
             };
         });
 
-        function addColorHistory(color) {
-            color = color.toUpperCase();
-            if (!usedColors.has(color)) {
-                usedColors.add(color);
-                const div = document.createElement('div');
-                div.className = 'swatch';
-                div.style.backgroundColor = color;
-                div.onclick = () => colorPicker.value = color;
-                historyContainer.prepend(div);
-                if(historyContainer.children.length > 18) historyContainer.lastChild.remove();
-            }
-        }
-
-        // --- DRAWING ENGINE ---
-        function getPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            return {
-                x: (e.clientX - rect.left) * (canvas.width / rect.width),
-                y: (e.clientY - rect.top) * (canvas.height / rect.height)
-            };
-        }
-
-        canvas.onmousedown = (e) => {
-            const pos = getPos(e);
-            startX = pos.x; startY = pos.y;
-            isDrawing = true;
-
-            // Capture snapshot for preview
-            snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-            if (currentTool === 'pen') {
-                ctx.beginPath();
-                ctx.moveTo(startX, startY);
-            }
-        };
-
-        canvas.onmousemove = (e) => {
-            if (!isDrawing) return;
-            const pos = getPos(e);
-
-            if (currentTool === 'pen') {
-                ctx.lineTo(pos.x, pos.y);
-                ctx.strokeStyle = colorPicker.value;
-                ctx.lineWidth = 4;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-            } else {
-                // Real-time Preview for shapes
-                ctx.putImageData(snapshot, 0, 0);
-                drawShape(currentTool, startX, startY, pos.x, pos.y, false);
-            }
-        };
-
-        canvas.onmouseup = (e) => {
-            if (!isDrawing) return;
-            const pos = getPos(e);
+        // 3. Adding Objects via Click
+        canvas.on('mouse:down', function(options) {
+            if (currentTool === 'select') return;
             
-            if (currentTool !== 'pen') {
-                ctx.putImageData(snapshot, 0, 0);
-                drawShape(currentTool, startX, startY, pos.x, pos.y, true);
-            }
-            
-            isDrawing = false;
-            saveState();
-        };
+            const pointer = canvas.getPointer(options.e);
+            const color = colorPicker.value;
+            let obj;
 
-        function drawShape(tool, x1, y1, x2, y2, isFinal) {
-            ctx.fillStyle = ctx.strokeStyle = colorPicker.value;
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-
-            const dist = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
-
-            switch(tool) {
-                case 'dot': ctx.beginPath(); ctx.arc(x1, y1, 8, 0, Math.PI*2); ctx.fill(); break;
-                case 'text': 
-                    if(isFinal) {
-                        ctx.font = "bold 24px Inter, Arial"; 
-                        ctx.textAlign = "center"; 
-                        ctx.fillText(document.getElementById('textInput').value || "P", x1, y1);
-                    }
+            switch(currentTool) {
+                case 'dot':
+                    obj = new fabric.Circle({ radius: 12, fill: color, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
                     break;
-                case 'circle': ctx.beginPath(); ctx.arc(x1, y1, dist, 0, Math.PI*2); ctx.stroke(); break;
-                case 'square': ctx.strokeRect(x1, y1, x2-x1, y2-y1); break;
+                case 'circle':
+                    obj = new fabric.Circle({ radius: 40, fill: 'transparent', stroke: color, strokeWidth: 4, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
+                    break;
+                case 'square':
+                    obj = new fabric.Rect({ width: 60, height: 60, fill: 'transparent', stroke: color, strokeWidth: 4, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
+                    break;
                 case 'x-mark':
-                    ctx.beginPath();
-                    ctx.moveTo(x1-dist, y1-dist); ctx.lineTo(x1+dist, y1+dist);
-                    ctx.moveTo(x1+dist, y1-dist); ctx.lineTo(x1-dist, y1+dist);
-                    ctx.stroke();
+                    obj = new fabric.Text('X', { fontSize: 40, fill: color, fontWeight: 'bold', left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
                     break;
-                case 'arrow':
-                    const head = 15; const angle = Math.atan2(y2-y1, x2-x1);
-                    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
-                    ctx.lineTo(x2-head*Math.cos(angle-Math.PI/6), y2-head*Math.sin(angle-Math.PI/6));
-                    ctx.moveTo(x2, y2);
-                    ctx.lineTo(x2-head*Math.cos(angle+Math.PI/6), y2-head*Math.sin(angle+Math.PI/6));
-                    ctx.stroke();
+                case 'text':
+                    obj = new fabric.Text(textInput.value || 'PLAY', { fontSize: 24, fill: color, fontWeight: 'bold', left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
                     break;
                 case 'star':
-                    drawStar(x1, y1, dist);
+                    obj = new fabric.Path('M 0 -20 L 5 -7 L 19 -7 L 8 2 L 12 15 L 0 7 L -12 15 L -8 2 L -19 -7 L -5 -7 Z', { fill: color, left: pointer.x, top: pointer.y, scaleX: 2, scaleY: 2, originX: 'center', originY: 'center' });
                     break;
-                case 'heart':
-                    drawHeart(x1, y1, dist);
+                case 'arrow':
+                    const line = new fabric.Line([0, 20, 0, -20], { stroke: color, strokeWidth: 4, originX: 'center', originY: 'center' });
+                    const head = new fabric.Triangle({ width: 15, height: 15, fill: color, left: 0, top: -20, originX: 'center', originY: 'center' });
+                    obj = new fabric.Group([line, head], { left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
                     break;
+            }
+
+            if (obj) {
+                canvas.add(obj);
+                canvas.setActiveObject(obj);
+                // Return to select tool after placing
+                document.querySelector('[data-tool="select"]').click();
+            }
+        });
+
+        // 4. Live Color Update
+        colorPicker.oninput = () => {
+            const active = canvas.getActiveObject();
+            if (active) {
+                if (active.type === 'group') {
+                    active.forEachObject(o => {
+                        if (o.stroke && o.stroke !== 'transparent') o.set('stroke', colorPicker.value);
+                        else o.set('fill', colorPicker.value);
+                    });
+                } else {
+                    if (active.stroke && active.fill === 'transparent') active.set('stroke', colorPicker.value);
+                    else active.set('fill', colorPicker.value);
+                }
+                canvas.renderAll();
+            }
+        };
+
+        // 5. Global Functions
+        function deleteSelected() {
+            canvas.getActiveObjects().forEach(obj => canvas.remove(obj));
+            canvas.discardActiveObject().renderAll();
+        }
+
+        function clearCanvas() {
+            if(confirm("Delete all objects?")) {
+                canvas.getObjects().forEach(obj => {
+                    if (obj !== canvas.backgroundImage) canvas.remove(obj);
+                });
             }
         }
 
-        function drawStar(x, y, r) {
-            ctx.beginPath();
-            for(let i=0; i<10; i++) {
-                let angle = (i * Math.PI) / 5;
-                let radius = i % 2 === 0 ? r : r/2;
-                ctx.lineTo(x + radius * Math.cos(angle), y + radius * Math.sin(angle));
-            }
-            ctx.closePath(); ctx.stroke();
-        }
-
-        function drawHeart(x, y, size) {
-            ctx.beginPath();
-            ctx.moveTo(x, y + size/4);
-            ctx.bezierCurveTo(x, y, x-size, y, x-size, y+size/2);
-            ctx.bezierCurveTo(x-size, y+size, x, y+size*1.2, x, y+size*1.5);
-            ctx.bezierCurveTo(x, y+size*1.2, x+size, y+size, x+size, y+size/2);
-            ctx.bezierCurveTo(x+size, y, x, y, x, y+size/4);
-            ctx.stroke();
-        }
-
-        function saveImage() {
-            const name = document.getElementById('filenameInput').value || 'hornets-play';
+        function exportPNG() {
+            const dataURL = canvas.toDataURL({ format: 'png', quality: 1 });
             const link = document.createElement('a');
-            link.download = name + '.png';
-            link.href = canvas.toDataURL();
+            link.download = 'buzz-city-play.png';
+            link.href = dataURL;
             link.click();
         }
+
+        // 6. Keyboard Delete
+        window.addEventListener('keydown', (e) => {
+            if (e.key === "Delete" || e.key === "Backspace") {
+                if (document.activeElement.tagName !== 'INPUT') deleteSelected();
+            }
+        });
+
+        // 7. Sidebar Toggle
+        document.getElementById('sidebarToggle').onclick = () => document.body.classList.toggle('sidebar-closed');
+
+        // 8. Base Image Upload
+        document.getElementById('fileUpload').onchange = (e) => {
+            const reader = new FileReader();
+            reader.onload = (f) => setBackground(f.target.result);
+            reader.readAsDataURL(e.target.files[0]);
+        };
     </script>
 </body>
 </html>
