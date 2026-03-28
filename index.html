@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buzz City Playbook Pro | Final Edition</title>
+    <title>BasketBall PlayBook</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
     <style>
         :root {
@@ -14,11 +14,10 @@
             --panel: #21262d;
             --border: #30363d;
             --text: #f0f6fc;
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--dark);
             color: var(--text);
             margin: 0;
@@ -34,23 +33,24 @@
             border-right: 2px solid var(--teal);
             display: flex;
             flex-direction: column;
-            transition: transform var(--transition), margin-left var(--transition);
             z-index: 100;
             box-shadow: 10px 0 30px rgba(0,0,0,0.5);
         }
 
-        body.sidebar-closed aside {
-            transform: translateX(-100%);
-            margin-left: -340px;
-        }
-
         .sidebar-header {
-            padding: 20px;
+            padding: 25px;
             text-align: center;
             background: linear-gradient(to bottom, var(--purple), transparent);
         }
 
-        h1 { font-size: 1.2rem; color: var(--teal); text-transform: uppercase; letter-spacing: 2px; margin: 0; }
+        h1 { 
+            font-size: 1.4rem; 
+            color: var(--teal); 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            margin: 0;
+            font-weight: 800;
+        }
 
         .scroll-area { flex: 1; overflow-y: auto; padding: 15px; }
 
@@ -62,16 +62,24 @@
             overflow: hidden;
         }
 
-        summary { padding: 12px; font-weight: 700; cursor: pointer; color: var(--teal); list-style: none; }
+        summary { 
+            padding: 14px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            color: var(--teal); 
+            list-style: none; 
+            transition: background 0.2s;
+        }
+        
         details[open] summary { background: var(--purple); color: white; }
 
-        .content { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .content { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
 
-        /* --- TOOLS --- */
-        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        /* --- TOOLS & BUTTONS --- */
+        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         button {
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             border: 1px solid var(--border);
             background: #30363d;
@@ -79,16 +87,17 @@
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
-            font-size: 12px;
+            font-size: 13px;
         }
 
         button:hover { border-color: var(--teal); background: #3c444d; }
-        button.active { background: var(--teal); border-color: white; box-shadow: 0 0 10px rgba(0,120,140,0.5); }
+        button.active { background: var(--teal); border-color: white; box-shadow: 0 0 15px rgba(0, 120, 140, 0.4); }
         
-        #colorHistory { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-        .swatch { width: 25px; height: 25px; border-radius: 4px; border: 1px solid white; cursor: pointer; }
+        #colorHistory { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .swatch { width: 28px; height: 28px; border-radius: 6px; border: 2px solid white; cursor: pointer; transition: 0.2s; }
+        .swatch:hover { transform: scale(1.1); }
 
-        /* --- MAIN AREA --- */
+        /* --- CANVAS AREA --- */
         main {
             flex: 1;
             display: flex;
@@ -96,7 +105,8 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            background: radial-gradient(circle, #1a1f26 0%, #0b0e14 100%);
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 40px 40px;
         }
 
         .canvas-card {
@@ -104,83 +114,73 @@
             padding: 8px;
             border-radius: 16px;
             border: 4px solid var(--teal);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
         }
 
-        /* --- HUD --- */
+        /* --- TOP HUD --- */
         .hud {
             position: absolute;
             top: 20px;
             display: flex;
-            gap: 12px;
+            gap: 15px;
             z-index: 10;
         }
 
         .hud-btn {
             background: rgba(22, 27, 34, 0.9);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             padding: 10px 20px;
             border-radius: 30px;
             color: white;
             font-weight: bold;
             cursor: pointer;
+            font-size: 12px;
         }
 
-        #sidebarToggle {
-            position: fixed;
-            left: 20px;
-            bottom: 20px;
-            z-index: 1000;
-            background: var(--teal);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-        }
+        .hud-btn:hover { background: var(--teal); border-color: white; }
 
-        input[type="text"] {
-            padding: 10px;
+        input[type="text"], input[type="color"] {
+            padding: 12px;
             background: #0d1117;
             border: 1px solid var(--border);
             color: white;
-            border-radius: 6px;
+            border-radius: 8px;
+            outline: none;
         }
     </style>
 </head>
 <body>
 
-    <button id="sidebarToggle">☰</button>
-
     <div class="hud">
-        <button onclick="deleteSelected()" class="hud-btn" style="color: #ff4d4d;">🗑 DELETE SELECTED</button>
-        <button onclick="clearCanvas()" class="hud-btn">🧹 CLEAR COURT</button>
-        <button onclick="document.getElementById('fileUpload').click()" class="hud-btn" style="color: var(--teal);">📤 UPLOAD PLAY</button>
+        <button onclick="undo()" class="hud-btn">↩ UNDO</button>
+        <button onclick="redo()" class="hud-btn">↪ REDO</button>
+        <button onclick="deleteSelected()" class="hud-btn" style="color: #ff4d4d;">🗑 DELETE</button>
+        <button onclick="clearCanvas()" class="hud-btn">🧹 CLEAR ALL</button>
+        <button onclick="document.getElementById('fileUpload').click()" class="hud-btn" style="color: var(--teal);">📤 UPLOAD IMAGE</button>
     </div>
 
     <input type="file" id="fileUpload" style="display:none;" accept="image/*">
 
-    <aside id="sidebar">
-        <div class="sidebar-header"><h1>BUZZ CITY PRO</h1></div>
+    <aside>
+        <div class="sidebar-header">
+            <h1>BasketBall PlayBook</h1>
+        </div>
         
         <div class="scroll-area">
             <details open>
-                <summary>🎨 COLORS & HISTORY</summary>
+                <summary>🎨 PALETTE & HISTORY</summary>
                 <div class="content">
-                    <input type="color" id="colorPicker" value="#00788C" style="width:100%; height:45px; border:none; cursor:pointer;">
+                    <input type="color" id="colorPicker" value="#00788C" style="width:100%; height:50px; cursor:pointer; background:none; border:none;">
                     <div id="colorHistory"></div>
                 </div>
             </details>
 
             <details open>
-                <summary>🖱️ INTERACTION</summary>
+                <summary>🖱️ CONTROL MODE</summary>
                 <div class="content">
-                    <button class="tool active" data-tool="select">SELECT / MOVE MODE</button>
-                    <p style="font-size:11px; color:#8b949e;">Select a shape to move it or change its color instantly.</p>
+                    <button class="tool active" data-tool="select" style="width:100%">SELECT / MOVE OBJECTS</button>
+                    <p style="font-size: 11px; color: #8b949e; margin: 0;">Click a shape to move, resize, rotate, or change its color.</p>
                 </div>
             </details>
 
@@ -189,8 +189,8 @@
                 <div class="content">
                     <div class="tool-grid">
                         <button class="tool" data-tool="dot">PLAYER DOT</button>
-                        <button class="tool" data-tool="circle">ZONE CIRCLE</button>
-                        <button class="tool" data-tool="square">BOX</button>
+                        <button class="tool" data-tool="circle">CIRCLE</button>
+                        <button class="tool" data-tool="square">SQUARE</button>
                         <button class="tool" data-tool="arrow">ARROW</button>
                         <button class="tool" data-tool="x-mark">X MARK</button>
                         <button class="tool" data-tool="star">STAR</button>
@@ -202,13 +202,13 @@
             <details>
                 <summary>📝 ANNOTATIONS</summary>
                 <div class="content">
-                    <input type="text" id="textInput" placeholder="Label (PG, SG, etc)">
+                    <input type="text" id="textInput" placeholder="Label (e.g. PG)">
                     <button class="tool" data-tool="text">PLACE TEXT</button>
                 </div>
             </details>
 
-            <div style="margin-top: auto; padding-top: 20px;">
-                <input type="text" id="filenameInput" placeholder="Save as..." style="width:100%; margin-bottom:10px;">
+            <div style="margin-top: 20px;">
+                <input type="text" id="filenameInput" placeholder="Play Name..." style="width:100%; margin-bottom:10px;">
                 <button onclick="exportPNG()" style="width:100%; background: var(--teal); padding:15px; font-size:16px;">💾 DOWNLOAD PLAY</button>
             </div>
         </div>
@@ -216,74 +216,136 @@
 
     <main>
         <div class="canvas-card">
-            <canvas id="mainCanvas" width="900" height="600"></canvas>
+            <canvas id="playCanvas" width="900" height="600"></canvas>
         </div>
     </main>
 
     <script>
-        // Setup Fabric Engine
-        const canvas = new fabric.Canvas('mainCanvas', { preserveObjectStacking: true });
+        // --- INITIALIZE ENGINE ---
+        const canvas = new fabric.Canvas('playCanvas', {
+            preserveObjectStacking: true,
+            stopContextMenu: true
+        });
+
         const colorPicker = document.getElementById('colorPicker');
         const historyContainer = document.getElementById('colorHistory');
         const textInput = document.getElementById('textInput');
         let currentTool = 'select';
         let usedColors = new Set();
 
-        // 1. Load Background
-        function setBg(url) {
+        // --- UNDO/REDO SYSTEM ---
+        let history = [];
+        let index = -1;
+
+        function updateState() {
+            if (index < history.length - 1) {
+                history = history.slice(0, index + 1);
+            }
+            history.push(JSON.stringify(canvas));
+            index = history.length - 1;
+        }
+
+        function undo() {
+            if (index > 0) {
+                index--;
+                canvas.loadFromJSON(history[index], canvas.renderAll.bind(canvas));
+            }
+        }
+
+        function redo() {
+            if (index < history.length - 1) {
+                index++;
+                canvas.loadFromJSON(history[index], canvas.renderAll.bind(canvas));
+            }
+        }
+
+        canvas.on('object:added', updateState);
+        canvas.on('object:modified', updateState);
+        canvas.on('object:removed', updateState);
+
+        // --- BACKGROUND ---
+        function setBackground(url) {
             fabric.Image.fromURL(url, function(img) {
                 canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
                     scaleX: canvas.width / img.width,
                     scaleY: canvas.height / img.height
                 });
+                updateState();
             });
         }
-        setBg('assets/background.png');
+        // Default court (replace 'assets/background.png' with your actual path)
+        setBackground('assets/background.png');
 
-        // 2. Shape Creation Logic
-        canvas.on('mouse:down', function(opt) {
+        // --- TOOL SELECTION ---
+        document.querySelectorAll('.tool').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.tool').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTool = btn.dataset.tool;
+                
+                canvas.selection = (currentTool === 'select');
+                canvas.forEachObject(obj => obj.selectable = (currentTool === 'select'));
+            };
+        });
+
+        // --- ADDING OBJECTS ---
+        canvas.on('mouse:down', function(options) {
             if (currentTool === 'select') return;
-            const ptr = canvas.getPointer(opt.e);
+            
+            const pointer = canvas.getPointer(options.e);
             const color = colorPicker.value;
-            let obj;
+            let shape;
 
             switch(currentTool) {
-                case 'dot': obj = new fabric.Circle({ radius: 12, fill: color, left: ptr.x, top: ptr.y, originX: 'center', originY: 'center' }); break;
-                case 'circle': obj = new fabric.Circle({ radius: 40, fill: 'transparent', stroke: color, strokeWidth: 4, left: ptr.x, top: ptr.y, originX: 'center', originY: 'center' }); break;
-                case 'square': obj = new fabric.Rect({ width: 60, height: 60, fill: 'transparent', stroke: color, strokeWidth: 4, left: ptr.x, top: ptr.y, originX: 'center', originY: 'center' }); break;
-                case 'x-mark': obj = new fabric.Text('X', { fontSize: 45, fill: color, fontWeight: 'bold', left: ptr.x, top: ptr.y, originX: 'center', originY: 'center' }); break;
-                case 'text': obj = new fabric.Text(textInput.value || 'P', { fontSize: 26, fill: color, fontWeight: 'bold', left: ptr.x, top: ptr.y, originX: 'center', originY: 'center' }); break;
-                case 'star': obj = new fabric.Path('M 0 -20 L 5 -7 L 19 -7 L 8 2 L 12 15 L 0 7 L -12 15 L -8 2 L -19 -7 L -5 -7 Z', { fill: color, left: ptr.x, top: ptr.y, scaleX: 2.2, scaleY: 2.2, originX: 'center', originY: 'center' }); break;
-                case 'heart': obj = new fabric.Path('M 0 10 C -10 -10 -20 0 -20 10 C -20 25 0 35 0 40 C 0 35 20 25 20 10 C 20 0 10 -10 0 10 Z', { fill: color, left: ptr.x, top: ptr.y, scaleX: 1.5, scaleY: 1.5, originX: 'center', originY: 'center', angle: 180 }); break;
+                case 'dot':
+                    shape = new fabric.Circle({ radius: 12, fill: color, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
+                    break;
+                case 'circle':
+                    shape = new fabric.Circle({ radius: 40, fill: 'transparent', stroke: color, strokeWidth: 4, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
+                    break;
+                case 'square':
+                    shape = new fabric.Rect({ width: 60, height: 60, fill: 'transparent', stroke: color, strokeWidth: 4, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
+                    break;
+                case 'x-mark':
+                    shape = new fabric.Text('X', { fontSize: 45, fill: color, fontWeight: 'bold', left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
+                    break;
+                case 'text':
+                    shape = new fabric.Text(textInput.value || 'P1', { fontSize: 26, fill: color, fontWeight: 'bold', left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
+                    break;
+                case 'star':
+                    shape = new fabric.Path('M 0 -20 L 5 -7 L 19 -7 L 8 2 L 12 15 L 0 7 L -12 15 L -8 2 L -19 -7 L -5 -7 Z', { fill: color, left: pointer.x, top: pointer.y, scaleX: 2.2, scaleY: 2.2, originX: 'center', originY: 'center' });
+                    break;
+                case 'heart':
+                    shape = new fabric.Path('M 0 10 C -10 -10 -20 0 -20 10 C -20 25 0 35 0 40 C 0 35 20 25 20 10 C 20 0 10 -10 0 10 Z', { fill: color, left: pointer.x, top: pointer.y, scaleX: 1.5, scaleY: 1.5, originX: 'center', originY: 'center', angle: 180 });
+                    break;
                 case 'arrow':
                     const line = new fabric.Line([0, 25, 0, -25], { stroke: color, strokeWidth: 5, originX: 'center', originY: 'center' });
                     const head = new fabric.Triangle({ width: 20, height: 20, fill: color, left: 0, top: -25, originX: 'center', originY: 'center' });
-                    obj = new fabric.Group([line, head], { left: ptr.x, top: ptr.y, originX: 'center', originY: 'center' });
+                    shape = new fabric.Group([line, head], { left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
                     break;
             }
 
-            if (obj) {
-                canvas.add(obj);
-                updateHistory(color);
-                document.querySelector('[data-tool="select"]').click(); // Return to select mode
+            if (shape) {
+                canvas.add(shape);
+                addColorHistory(color);
+                document.querySelector('[data-tool="select"]').click(); // Auto-switch to select
             }
         });
 
-        // 3. Color History & Live Editing
-        function updateHistory(color) {
+        // --- COLOR & HISTORY ---
+        function addColorHistory(color) {
             color = color.toUpperCase();
             if (!usedColors.has(color)) {
                 usedColors.add(color);
                 const sw = document.createElement('div');
                 sw.className = 'swatch';
                 sw.style.backgroundColor = color;
-                sw.onclick = () => { colorPicker.value = color; applyColor(); };
+                sw.onclick = () => { colorPicker.value = color; changeActiveColor(); };
                 historyContainer.prepend(sw);
-                if(historyContainer.children.length > 14) historyContainer.lastChild.remove();
             }
         }
 
-        function applyColor() {
+        function changeActiveColor() {
             const active = canvas.getActiveObject();
             if (active) {
                 if (active.type === 'group') {
@@ -292,49 +354,43 @@
                     active.set(active.stroke && active.fill === 'transparent' ? 'stroke' : 'fill', colorPicker.value);
                 }
                 canvas.renderAll();
+                updateState();
             }
         }
-        colorPicker.oninput = applyColor;
+        colorPicker.oninput = changeActiveColor;
 
-        // 4. Global Actions
+        // --- HUD ACTIONS ---
         function deleteSelected() {
             canvas.getActiveObjects().forEach(o => canvas.remove(o));
             canvas.discardActiveObject().renderAll();
         }
 
         function clearCanvas() {
-            if(confirm("Wipe the court?")) {
+            if(confirm("Wipe the entire playbook?")) {
                 canvas.getObjects().forEach(o => { if(o !== canvas.backgroundImage) canvas.remove(o); });
+                updateState();
             }
         }
 
         function exportPNG() {
             const link = document.createElement('a');
-            link.download = (document.getElementById('filenameInput').value || 'buzz-city-play') + '.png';
+            link.download = (document.getElementById('filenameInput').value || 'BasketBallPlaybook') + '.png';
             link.href = canvas.toDataURL({ format: 'png', quality: 1 });
             link.click();
         }
 
-        // 5. UI Toggles
-        document.getElementById('sidebarToggle').onclick = () => document.body.classList.toggle('sidebar-closed');
-        document.querySelectorAll('.tool').forEach(b => {
-            b.onclick = () => {
-                document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
-                b.classList.add('active');
-                currentTool = b.dataset.tool;
-                canvas.selection = (currentTool === 'select');
-                canvas.forEachObject(o => o.selectable = (currentTool === 'select'));
-            };
-        });
-
+        // --- FILE UPLOADER ---
         document.getElementById('fileUpload').onchange = (e) => {
             const reader = new FileReader();
-            reader.onload = (f) => setBg(f.target.result);
+            reader.onload = (f) => setBackground(f.target.result);
             reader.readAsDataURL(e.target.files[0]);
         };
 
+        // --- KEYBOARD DELETE ---
         window.addEventListener('keydown', (e) => {
-            if ((e.key === "Delete" || e.key === "Backspace") && document.activeElement.tagName !== 'INPUT') deleteSelected();
+            if ((e.key === "Delete" || e.key === "Backspace") && document.activeElement.tagName !== 'INPUT') {
+                deleteSelected();
+            }
         });
     </script>
 </body>
