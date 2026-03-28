@@ -12,6 +12,7 @@
             --sidebar: #1e293b;
             --text: #f8fafc;
             --border: #334155;
+            --accent: #38bdf8;
         }
 
         body {
@@ -24,22 +25,23 @@
             overflow: hidden;
         }
 
-        /* Sidebar Styling */
+        /* Sidebar */
         aside {
-            width: 320px;
+            width: 340px;
             background: var(--sidebar);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 24px;
-            gap: 20px;
+            padding: 20px;
+            gap: 15px;
             box-shadow: 4px 0 15px rgba(0,0,0,0.3);
             z-index: 10;
+            overflow-y: auto;
         }
 
         h1 {
-            font-size: 22px;
-            margin: 0;
+            font-size: 20px;
+            margin: 0 0 10px 0;
             color: var(--primary);
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -48,133 +50,126 @@
         }
 
         .section-label {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             color: #94a3b8;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-top: 5px;
         }
 
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        /* Tool Buttons */
         .tool-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
         }
 
         button {
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
             border: 1px solid var(--border);
             background: #334155;
             color: white;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            font-size: 13px;
         }
 
-        button:hover {
-            background: #475569;
-        }
+        button:hover { background: #475569; }
+        button.active { background: var(--primary); border-color: var(--primary); }
 
-        button.active {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
+        .undo-btn { background: #64748b; }
+        .clear-btn { background: #ef4444; border: none; }
+        .save-btn { background: var(--accent); color: #0f172a; border: none; font-size: 15px; margin-top: 10px; }
 
-        /* Inputs */
         input[type="text"], input[type="color"] {
             width: 100%;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
             border: 1px solid var(--border);
             background: #0f172a;
             color: white;
             box-sizing: border-box;
         }
 
-        input[type="color"] {
-            height: 50px;
-            padding: 5px;
-            cursor: pointer;
-        }
-
-        .save-btn {
-            background: var(--primary);
-            border: none;
-            margin-top: auto;
-            padding: 16px;
-            font-size: 16px;
-        }
-
-        .save-btn:hover { background: var(--primary-hover); }
-
-        .clear-btn {
-            background: #ef4444;
-            border: none;
-        }
-
-        .clear-btn:hover { background: #dc2626; }
-
-        /* Main Workspace */
+        /* Layout */
         main {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px;
+            padding: 20px;
+            background-image: radial-gradient(#334155 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .canvas-container {
             position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         canvas {
             background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border-radius: 8px;
             cursor: crosshair;
+            display: block;
         }
     </style>
 </head>
 <body>
 
     <aside>
-        <h1>Basketball Playbook</h1>
+        <h1>Playbook Pro</h1>
         
         <div class="control-group">
-            <span class="section-label">Select Color</span>
+            <span class="section-label">Color Palette</span>
             <input type="color" id="colorPicker" value="#ff6600">
         </div>
 
         <div class="control-group">
-            <span class="section-label">Tools</span>
+            <span class="section-label">Basic Tools</span>
             <div class="tool-grid">
-                <button id="drawBtn" class="active">Draw</button>
-                <button id="textBtn">Text Bar</button>
+                <button class="tool active" data-tool="draw">Free Draw</button>
+                <button class="tool" data-tool="dot">Place Dot</button>
+                <button class="tool" data-tool="text">Text Bar</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <span class="section-label">Shapes</span>
+            <div class="tool-grid">
+                <button class="tool" data-tool="circle">Circle (O)</button>
+                <button class="tool" data-tool="square">Block (X)</button>
+                <button class="tool" data-tool="arrow">Arrow</button>
             </div>
         </div>
 
         <div id="textSettings" class="control-group" style="display: none;">
-            <span class="section-label">Text Content</span>
-            <input type="text" id="textInput" placeholder="Enter Label (e.g. PG)">
-            <p style="font-size: 11px; color: #94a3b8;">Click on court to place text</p>
+            <span class="section-label">Text Label</span>
+            <input type="text" id="textInput" placeholder="Ex: Screen, PG, Pass">
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border); width: 100%; margin: 10px 0;">
+
+        <div class="control-group">
+            <span class="section-label">Editing</span>
+            <div class="tool-grid">
+                <button id="undoBtn" class="undo-btn">↩ Undo</button>
+                <button id="clearBtn" class="clear-btn">🗑 Clear</button>
+            </div>
         </div>
 
         <div class="control-group">
-            <span class="section-label">File Management</span>
-            <input type="text" id="filenameInput" placeholder="Filename (e.g. Pick-n-Roll)">
-            <button id="clearBtn" class="clear-btn">Clear Court</button>
+            <span class="section-label">Export</span>
+            <input type="text" id="filenameInput" placeholder="Play Name...">
+            <button id="saveBtn" class="save-btn">Download PNG</button>
         </div>
-
-        <button id="saveBtn" class="save-btn">Download Play (.PNG)</button>
     </aside>
 
     <main>
-        <canvas id="courtCanvas" width="900" height="600"></canvas>
+        <div class="canvas-container">
+            <canvas id="courtCanvas" width="900" height="600"></canvas>
+        </div>
     </main>
 
     <script>
@@ -185,74 +180,165 @@
         const filenameInput = document.getElementById('filenameInput');
         const textSettings = document.getElementById('textSettings');
         
-        const drawBtn = document.getElementById('drawBtn');
-        const textBtn = document.getElementById('textBtn');
+        const tools = document.querySelectorAll('.tool');
+        const undoBtn = document.getElementById('undoBtn');
         const clearBtn = document.getElementById('clearBtn');
         const saveBtn = document.getElementById('saveBtn');
 
         let isDrawing = false;
         let currentTool = 'draw';
+        let startX, startY;
+
+        // History Stack for Undo
+        let history = [];
+        const MAX_HISTORY = 20;
 
         // Load background
         const bg = new Image();
         bg.src = 'assets/background.png';
-        bg.onload = () => { resetCanvas(); };
+        bg.onload = () => { 
+            resetCanvas(); 
+            saveState(); // Initial state
+        };
 
         function resetCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Draw background image
             ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
         }
 
-        // Tool Switching
-        drawBtn.onclick = () => {
-            currentTool = 'draw';
-            drawBtn.classList.add('active');
-            textBtn.classList.remove('active');
-            textSettings.style.display = 'none';
+        // Save current canvas to history
+        function saveState() {
+            if (history.length >= MAX_HISTORY) history.shift();
+            history.push(canvas.toDataURL());
+        }
+
+        // Undo Function
+        undoBtn.onclick = () => {
+            if (history.length > 1) {
+                history.pop(); // Remove current
+                let prev = new Image();
+                prev.src = history[history.length - 1];
+                prev.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(prev, 0, 0);
+                };
+            }
         };
 
-        textBtn.onclick = () => {
-            currentTool = 'text';
-            textBtn.classList.add('active');
-            drawBtn.classList.remove('active');
-            textSettings.style.display = 'flex';
-        };
+        // Tool Selection
+        tools.forEach(btn => {
+            btn.onclick = () => {
+                tools.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTool = btn.getAttribute('data-tool');
+                
+                textSettings.style.display = (currentTool === 'text') ? 'block' : 'none';
+            };
+        });
 
         clearBtn.onclick = () => {
-            if(confirm("Wipe the court clean?")) resetCanvas();
+            if(confirm("Clear play?")) {
+                resetCanvas();
+                saveState();
+            }
         };
 
-        // Canvas Interaction
+        // Mouse Events
         canvas.onmousedown = (e) => {
-            const { x, y } = getMousePos(e);
+            const pos = getMousePos(e);
+            startX = pos.x;
+            startY = pos.y;
+            isDrawing = true;
 
             if (currentTool === 'draw') {
-                isDrawing = true;
                 ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.strokeStyle = colorPicker.value;
-                ctx.lineWidth = 5;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-            } else {
-                const txt = textInput.value || "X";
-                ctx.fillStyle = colorPicker.value;
-                ctx.font = "bold 24px Inter, Arial";
-                ctx.textAlign = "center";
-                ctx.fillText(txt, x, y);
+                ctx.moveTo(startX, startY);
+            } else if (currentTool === 'dot') {
+                drawDot(startX, startY);
+                saveState();
+                isDrawing = false;
+            } else if (currentTool === 'text') {
+                drawText(startX, startY);
+                saveState();
+                isDrawing = false;
             }
         };
 
         canvas.onmousemove = (e) => {
-            if (!isDrawing || currentTool !== 'draw') return;
-            const { x, y } = getMousePos(e);
-            ctx.lineTo(x, y);
-            ctx.stroke();
+            if (!isDrawing) return;
+            const pos = getMousePos(e);
+
+            if (currentTool === 'draw') {
+                ctx.lineTo(pos.x, pos.y);
+                ctx.strokeStyle = colorPicker.value;
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+            // For shapes, we don't draw in real-time here to keep it simple,
+            // but we'll finalize them on mouseup.
         };
 
-        canvas.onmouseup = () => isDrawing = false;
-        canvas.onmouseout = () => isDrawing = false;
+        canvas.onmouseup = (e) => {
+            if (!isDrawing) return;
+            const pos = getMousePos(e);
+
+            if (currentTool === 'circle') drawCircle(startX, startY, pos.x, pos.y);
+            if (currentTool === 'square') drawSquare(startX, startY, pos.x, pos.y);
+            if (currentTool === 'arrow') drawArrow(startX, startY, pos.x, pos.y);
+
+            isDrawing = false;
+            saveState();
+        };
+
+        // Drawing Helper Functions
+        function drawDot(x, y) {
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = colorPicker.value;
+            ctx.fill();
+        }
+
+        function drawText(x, y) {
+            const txt = textInput.value || "Note";
+            ctx.fillStyle = colorPicker.value;
+            ctx.font = "bold 20px Inter, Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(txt, x, y);
+        }
+
+        function drawCircle(x1, y1, x2, y2) {
+            let radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            ctx.beginPath();
+            ctx.arc(x1, y1, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = colorPicker.value;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        function drawSquare(x1, y1, x2, y2) {
+            ctx.strokeStyle = colorPicker.value;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+        }
+
+        function drawArrow(x1, y1, x2, y2) {
+            const headlen = 15;
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = colorPicker.value;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y2 - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y2 - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+        }
 
         function getMousePos(e) {
             const rect = canvas.getBoundingClientRect();
@@ -262,9 +348,8 @@
             };
         }
 
-        // Save Logic
         saveBtn.onclick = () => {
-            const name = filenameInput.value.trim() || "my-basketball-play";
+            const name = filenameInput.value.trim() || "hoops-play";
             const link = document.createElement('a');
             link.download = `${name}.png`;
             link.href = canvas.toDataURL("image/png");
