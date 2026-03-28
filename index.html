@@ -17,7 +17,7 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--dark);
             color: var(--text);
             margin: 0;
@@ -43,6 +43,13 @@
             background: linear-gradient(to bottom, var(--purple), transparent);
         }
 
+        /* --- BLINKING ANIMATION --- */
+        @keyframes blinker {
+            0% { opacity: 1.0; text-shadow: 0 0 10px var(--teal); }
+            50% { opacity: 0.3; text-shadow: none; }
+            100% { opacity: 1.0; text-shadow: 0 0 10px var(--teal); }
+        }
+
         h1 { 
             font-size: 1.4rem; 
             color: var(--teal); 
@@ -50,6 +57,7 @@
             letter-spacing: 3px; 
             margin: 0;
             font-weight: 800;
+            animation: blinker 1.5s linear infinite; /* The Blink */
         }
 
         .scroll-area { flex: 1; overflow-y: auto; padding: 15px; }
@@ -59,23 +67,14 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             margin-bottom: 12px;
-            overflow: hidden;
         }
 
-        summary { 
-            padding: 14px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            color: var(--teal); 
-            list-style: none; 
-            transition: background 0.2s;
-        }
-        
+        summary { padding: 14px; font-weight: 700; cursor: pointer; color: var(--teal); list-style: none; }
         details[open] summary { background: var(--purple); color: white; }
 
         .content { padding: 15px; display: flex; flex-direction: column; gap: 12px; }
 
-        /* --- TOOLS & BUTTONS --- */
+        /* --- TOOLS --- */
         .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         button {
@@ -87,17 +86,15 @@
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
-            font-size: 13px;
         }
 
         button:hover { border-color: var(--teal); background: #3c444d; }
         button.active { background: var(--teal); border-color: white; box-shadow: 0 0 15px rgba(0, 120, 140, 0.4); }
         
         #colorHistory { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .swatch { width: 28px; height: 28px; border-radius: 6px; border: 2px solid white; cursor: pointer; transition: 0.2s; }
-        .swatch:hover { transform: scale(1.1); }
+        .swatch { width: 28px; height: 28px; border-radius: 6px; border: 1px solid white; cursor: pointer; }
 
-        /* --- CANVAS AREA --- */
+        /* --- CANVAS --- */
         main {
             flex: 1;
             display: flex;
@@ -105,8 +102,6 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
-            background-size: 40px 40px;
         }
 
         .canvas-card {
@@ -117,7 +112,6 @@
             box-shadow: 0 25px 50px rgba(0,0,0,0.7);
         }
 
-        /* --- TOP HUD --- */
         .hud {
             position: absolute;
             top: 20px;
@@ -135,10 +129,7 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
-            font-size: 12px;
         }
-
-        .hud-btn:hover { background: var(--teal); border-color: white; }
 
         input[type="text"], input[type="color"] {
             padding: 12px;
@@ -146,7 +137,6 @@
             border: 1px solid var(--border);
             color: white;
             border-radius: 8px;
-            outline: none;
         }
     </style>
 </head>
@@ -169,7 +159,7 @@
         
         <div class="scroll-area">
             <details open>
-                <summary>🎨 PALETTE & HISTORY</summary>
+                <summary>🎨 PALETTE</summary>
                 <div class="content">
                     <input type="color" id="colorPicker" value="#00788C" style="width:100%; height:50px; cursor:pointer; background:none; border:none;">
                     <div id="colorHistory"></div>
@@ -177,10 +167,10 @@
             </details>
 
             <details open>
-                <summary>🖱️ CONTROL MODE</summary>
+                <summary>🖱️ MODE</summary>
                 <div class="content">
-                    <button class="tool active" data-tool="select" style="width:100%">SELECT / MOVE OBJECTS</button>
-                    <p style="font-size: 11px; color: #8b949e; margin: 0;">Click a shape to move, resize, rotate, or change its color.</p>
+                    <button class="tool" data-tool="select" style="width:100%">MOVE / EDIT MODE</button>
+                    <p style="font-size: 11px; color: #8b949e;">Switch to this mode to move shapes you've already placed.</p>
                 </div>
             </details>
 
@@ -188,7 +178,7 @@
                 <summary>📐 TACTICAL SHAPES</summary>
                 <div class="content">
                     <div class="tool-grid">
-                        <button class="tool" data-tool="dot">PLAYER DOT</button>
+                        <button class="tool active" data-tool="dot">PLAYER DOT</button>
                         <button class="tool" data-tool="circle">CIRCLE</button>
                         <button class="tool" data-tool="square">SQUARE</button>
                         <button class="tool" data-tool="arrow">ARROW</button>
@@ -221,26 +211,18 @@
     </main>
 
     <script>
-        // --- INITIALIZE ENGINE ---
-        const canvas = new fabric.Canvas('playCanvas', {
-            preserveObjectStacking: true,
-            stopContextMenu: true
-        });
-
+        const canvas = new fabric.Canvas('playCanvas', { preserveObjectStacking: true });
         const colorPicker = document.getElementById('colorPicker');
         const historyContainer = document.getElementById('colorHistory');
         const textInput = document.getElementById('textInput');
-        let currentTool = 'select';
+        
+        let currentTool = 'dot'; // Start with Dot
         let usedColors = new Set();
-
-        // --- UNDO/REDO SYSTEM ---
         let history = [];
         let index = -1;
 
         function updateState() {
-            if (index < history.length - 1) {
-                history = history.slice(0, index + 1);
-            }
+            if (index < history.length - 1) history = history.slice(0, index + 1);
             history.push(JSON.stringify(canvas));
             index = history.length - 1;
         }
@@ -263,7 +245,6 @@
         canvas.on('object:modified', updateState);
         canvas.on('object:removed', updateState);
 
-        // --- BACKGROUND ---
         function setBackground(url) {
             fabric.Image.fromURL(url, function(img) {
                 canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
@@ -273,7 +254,6 @@
                 updateState();
             });
         }
-        // Default court (replace 'assets/background.png' with your actual path)
         setBackground('assets/background.png');
 
         // --- TOOL SELECTION ---
@@ -283,12 +263,16 @@
                 btn.classList.add('active');
                 currentTool = btn.dataset.tool;
                 
+                // Only allow selection in 'select' mode
                 canvas.selection = (currentTool === 'select');
-                canvas.forEachObject(obj => obj.selectable = (currentTool === 'select'));
+                canvas.forEachObject(obj => {
+                    obj.selectable = (currentTool === 'select');
+                    obj.evented = (currentTool === 'select');
+                });
             };
         });
 
-        // --- ADDING OBJECTS ---
+        // --- STICKY DRAWING LOGIC ---
         canvas.on('mouse:down', function(options) {
             if (currentTool === 'select') return;
             
@@ -297,27 +281,13 @@
             let shape;
 
             switch(currentTool) {
-                case 'dot':
-                    shape = new fabric.Circle({ radius: 12, fill: color, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
-                    break;
-                case 'circle':
-                    shape = new fabric.Circle({ radius: 40, fill: 'transparent', stroke: color, strokeWidth: 4, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
-                    break;
-                case 'square':
-                    shape = new fabric.Rect({ width: 60, height: 60, fill: 'transparent', stroke: color, strokeWidth: 4, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
-                    break;
-                case 'x-mark':
-                    shape = new fabric.Text('X', { fontSize: 45, fill: color, fontWeight: 'bold', left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
-                    break;
-                case 'text':
-                    shape = new fabric.Text(textInput.value || 'P1', { fontSize: 26, fill: color, fontWeight: 'bold', left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' });
-                    break;
-                case 'star':
-                    shape = new fabric.Path('M 0 -20 L 5 -7 L 19 -7 L 8 2 L 12 15 L 0 7 L -12 15 L -8 2 L -19 -7 L -5 -7 Z', { fill: color, left: pointer.x, top: pointer.y, scaleX: 2.2, scaleY: 2.2, originX: 'center', originY: 'center' });
-                    break;
-                case 'heart':
-                    shape = new fabric.Path('M 0 10 C -10 -10 -20 0 -20 10 C -20 25 0 35 0 40 C 0 35 20 25 20 10 C 20 0 10 -10 0 10 Z', { fill: color, left: pointer.x, top: pointer.y, scaleX: 1.5, scaleY: 1.5, originX: 'center', originY: 'center', angle: 180 });
-                    break;
+                case 'dot': shape = new fabric.Circle({ radius: 12, fill: color, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' }); break;
+                case 'circle': shape = new fabric.Circle({ radius: 40, fill: 'transparent', stroke: color, strokeWidth: 4, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' }); break;
+                case 'square': shape = new fabric.Rect({ width: 60, height: 60, fill: 'transparent', stroke: color, strokeWidth: 4, left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' }); break;
+                case 'x-mark': shape = new fabric.Text('X', { fontSize: 45, fill: color, fontWeight: 'bold', left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' }); break;
+                case 'text': shape = new fabric.Text(textInput.value || 'P', { fontSize: 26, fill: color, fontWeight: 'bold', left: pointer.x, top: pointer.y, originX: 'center', originY: 'center' }); break;
+                case 'star': shape = new fabric.Path('M 0 -20 L 5 -7 L 19 -7 L 8 2 L 12 15 L 0 7 L -12 15 L -8 2 L -19 -7 L -5 -7 Z', { fill: color, left: pointer.x, top: pointer.y, scaleX: 2.2, scaleY: 2.2, originX: 'center', originY: 'center' }); break;
+                case 'heart': shape = new fabric.Path('M 0 10 C -10 -10 -20 0 -20 10 C -20 25 0 35 0 40 C 0 35 20 25 20 10 C 20 0 10 -10 0 10 Z', { fill: color, left: pointer.x, top: pointer.y, scaleX: 1.5, scaleY: 1.5, originX: 'center', originY: 'center', angle: 180 }); break;
                 case 'arrow':
                     const line = new fabric.Line([0, 25, 0, -25], { stroke: color, strokeWidth: 5, originX: 'center', originY: 'center' });
                     const head = new fabric.Triangle({ width: 20, height: 20, fill: color, left: 0, top: -25, originX: 'center', originY: 'center' });
@@ -326,13 +296,15 @@
             }
 
             if (shape) {
+                // Keep it non-selectable while we are in drawing mode
+                shape.selectable = false;
+                shape.evented = false;
                 canvas.add(shape);
                 addColorHistory(color);
-                document.querySelector('[data-tool="select"]').click(); // Auto-switch to select
+                // NOT switching back to select mode automatically anymore!
             }
         });
 
-        // --- COLOR & HISTORY ---
         function addColorHistory(color) {
             color = color.toUpperCase();
             if (!usedColors.has(color)) {
@@ -340,33 +312,18 @@
                 const sw = document.createElement('div');
                 sw.className = 'swatch';
                 sw.style.backgroundColor = color;
-                sw.onclick = () => { colorPicker.value = color; changeActiveColor(); };
+                sw.onclick = () => { colorPicker.value = color; };
                 historyContainer.prepend(sw);
             }
         }
 
-        function changeActiveColor() {
-            const active = canvas.getActiveObject();
-            if (active) {
-                if (active.type === 'group') {
-                    active.forEachObject(o => o.set(o.stroke && o.stroke !== 'transparent' ? 'stroke' : 'fill', colorPicker.value));
-                } else {
-                    active.set(active.stroke && active.fill === 'transparent' ? 'stroke' : 'fill', colorPicker.value);
-                }
-                canvas.renderAll();
-                updateState();
-            }
-        }
-        colorPicker.oninput = changeActiveColor;
-
-        // --- HUD ACTIONS ---
         function deleteSelected() {
             canvas.getActiveObjects().forEach(o => canvas.remove(o));
             canvas.discardActiveObject().renderAll();
         }
 
         function clearCanvas() {
-            if(confirm("Wipe the entire playbook?")) {
+            if(confirm("Clear court?")) {
                 canvas.getObjects().forEach(o => { if(o !== canvas.backgroundImage) canvas.remove(o); });
                 updateState();
             }
@@ -379,18 +336,14 @@
             link.click();
         }
 
-        // --- FILE UPLOADER ---
         document.getElementById('fileUpload').onchange = (e) => {
             const reader = new FileReader();
             reader.onload = (f) => setBackground(f.target.result);
             reader.readAsDataURL(e.target.files[0]);
         };
 
-        // --- KEYBOARD DELETE ---
         window.addEventListener('keydown', (e) => {
-            if ((e.key === "Delete" || e.key === "Backspace") && document.activeElement.tagName !== 'INPUT') {
-                deleteSelected();
-            }
+            if ((e.key === "Delete" || e.key === "Backspace") && document.activeElement.tagName !== 'INPUT') deleteSelected();
         });
     </script>
 </body>
